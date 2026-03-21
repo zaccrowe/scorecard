@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="default"/>
+<title>Roof Health Scorecard — Aesthetic Roofing</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+
+<script>
+/* ============================================================
+   PHOTO CONFIGURATION — EDIT THIS SECTION ONLY
+   ============================================================
+   For each slot below, replace the empty string "" with a
+   direct image URL (Google Drive, Dropbox, your website, etc.)
+
+   HOW TO GET A GOOGLE DRIVE DIRECT LINK:
+   1. Upload photo to Google Drive
+   2. Right-click → Share → change to "Anyone with the link"
+   3. Copy the link — it looks like:
+      https://drive.google.com/file/d/FILE_ID/view?usp=sharing
+   4. Change it to:
+      https://drive.google.com/uc?export=view&id=FILE_ID
+   5. Paste that below.
+
+   Leave a slot as "" to keep the illustrated fallback diagram.
+   ============================================================ */
+
+const PHOTOS = {
+
+  shingles: {
+    good:    "",   // Score 0: Healthy shingles — full granules, uniform, flat
+    aging:   "",   // Score 1: Aging shingles — granule loss, fading, slight curl
+    problem: "",   // Score 2: Bad shingles — cracking, bare patches, cupping
+  },
+
+  damage: {
+    good:    "",   // Score 0: No missing or cracked shingles
+    aging:   "",   // Score 1: 1-2 cracked or lifted shingles
+    problem: "",   // Score 2: Missing shingles, exposed felt, hail bruising
+  },
+
+  flashings: {
+    good:    "",   // Score 0: Tight seals around chimney/pipes, no rust
+    aging:   "",   // Score 1: Minor caulk shrinkage, surface rust starting
+    problem: "",   // Score 2: Lifted flashing, open gaps, heavy rust
+  },
+
+  ventilation: {
+    good:    "",   // Score 0: Ridge & soffit vents clear, clean decking
+    aging:   "",   // Score 1: Partial blockage, minor staining on decking
+    problem: "",   // Score 2: Blocked vents, mold or rot on decking
+  },
+
+  leaks: {
+    good:    "",   // Score 0: No stains, dry deck, no soft spots
+    aging:   "",   // Score 1: Old stain visible, no active moisture
+    problem: "",   // Score 2: Active leak, recent staining, soft/rotted deck
+  },
+
+};
+/* ============================================================
+   END OF PHOTO CONFIGURATION — DO NOT EDIT BELOW THIS LINE
+   ============================================================ */
+</script>
+
+<style>
+:root {
+  --green-bg:#EAF3DE;--green-mid:#639922;--green-dark:#3B6D11;
+  --amber-bg:#FAEEDA;--amber-mid:#BA7517;--amber-dark:#854F0B;
+  --red-bg:#FCEBEB;--red-mid:#A32D2D;--red-dark:#791F1F;
+  --ink:#1a1a18;--ink2:#555550;--ink3:#999990;
+  --surface:#faf9f7;--card:#ffffff;--border:#e4e0d8;--border2:#ccc8be;
+  --radius:12px;--radius-sm:8px;
+  --font:'DM Sans',system-ui,sans-serif;
+  --mono:'DM Mono',monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html{font-size:16px}
+body{font-family:var(--font);background:var(--surface);color:var(--ink);min-height:100vh;padding:0}
+
+.page-header{background:var(--ink);color:white;padding:20px 28px 18px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
+.header-left .co{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:#aaa;margin-bottom:3px}
+.header-left .title{font-size:20px;font-weight:600;color:white}
+.score-chip{display:flex;align-items:center;gap:10px}
+.score-big{font-family:var(--mono);font-size:36px;font-weight:500;color:white;line-height:1;min-width:52px;text-align:right}
+.score-denom{font-size:14px;color:#777;margin-top:4px}
+.zone-pill{font-size:12px;font-weight:500;padding:5px 12px;border-radius:20px;transition:all .2s}
+.zone-green{background:var(--green-bg);color:var(--green-dark)}
+.zone-amber{background:var(--amber-bg);color:var(--amber-dark)}
+.zone-red{background:var(--red-bg);color:var(--red-dark)}
+
+.main{padding:20px 20px 120px;max-width:900px;margin:0 auto}
+
+.meta-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:20px}
+.meta-field{display:flex;flex-direction:column;gap:4px}
+.meta-label{font-size:10px;font-weight:500;color:var(--ink3);letter-spacing:.06em;text-transform:uppercase}
+.meta-input{background:var(--card);border:1px solid var(--border);border-radius:var(--radius-sm);padding:9px 11px;font-size:14px;font-family:var(--font);color:var(--ink);outline:none;width:100%;transition:border-color .15s}
+.meta-input:focus{border-color:var(--ink2)}
+
+.sec-label{font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--ink3);margin:0 0 10px}
+
+.cats{display:flex;flex-direction:column;gap:12px;margin-bottom:20px}
+.cat-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;transition:border-color .2s}
+.cat-card.scored-0{border-color:var(--green-mid)}
+.cat-card.scored-1{border-color:var(--amber-mid)}
+.cat-card.scored-2{border-color:var(--red-mid)}
+.cat-top{display:grid;grid-template-columns:1fr auto;align-items:center;padding:14px 16px;gap:16px}
+.cat-name{font-size:15px;font-weight:600;color:var(--ink)}
+.cat-desc{font-size:12px;color:var(--ink2);margin-top:2px}
+.pills{display:flex;gap:8px}
+.pill{width:44px;height:44px;border-radius:50%;border:1.5px solid var(--border2);background:var(--surface);font-size:16px;font-weight:600;font-family:var(--mono);color:var(--ink3);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s;user-select:none;-webkit-user-select:none}
+.pill:active{transform:scale(0.92)}
+.pill.s0{background:var(--green-bg);border-color:var(--green-mid);color:var(--green-dark)}
+.pill.s1{background:var(--amber-bg);border-color:var(--amber-mid);color:var(--amber-dark)}
+.pill.s2{background:var(--red-bg);border-color:var(--red-mid);color:var(--red-dark)}
+
+.ref-strip{display:grid;grid-template-columns:repeat(3,1fr);border-top:1px solid var(--border)}
+.ref-col{padding:10px 12px;border-right:1px solid var(--border)}
+.ref-col:last-child{border-right:none}
+.ref-badge{display:inline-flex;align-items:center;gap:4px;font-size:10px;font-weight:600;padding:2px 8px;border-radius:4px;margin-bottom:6px}
+.rb0{background:var(--green-bg);color:var(--green-dark)}
+.rb1{background:var(--amber-bg);color:var(--amber-dark)}
+.rb2{background:var(--red-bg);color:var(--red-dark)}
+
+/* Photo / illustration slot */
+.ref-ill{width:100%;height:80px;border-radius:6px;overflow:hidden;margin-bottom:5px;background:#f0ece4;display:flex;align-items:center;justify-content:center;position:relative}
+.ref-ill img{width:100%;height:100%;object-fit:cover;border-radius:6px;display:block}
+.ref-ill svg{width:100%;height:100%;display:block}
+.ref-ill .photo-placeholder{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;width:100%;height:100%;cursor:pointer;border:1.5px dashed var(--border2);border-radius:6px;transition:background .15s}
+.ref-ill .photo-placeholder:hover{background:#e8e4dc}
+.placeholder-icon{width:22px;height:22px;opacity:.35}
+.placeholder-text{font-size:10px;color:var(--ink3);text-align:center;line-height:1.3;padding:0 6px}
+.ref-desc{font-size:10px;color:var(--ink2);line-height:1.45}
+
+.summary-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:16px 20px;margin-bottom:20px;display:flex;gap:20px;align-items:center}
+.sum-score{text-align:center}
+.sum-num{font-family:var(--mono);font-size:52px;font-weight:500;line-height:1;color:var(--ink)}
+.sum-den{font-size:13px;color:var(--ink3)}
+.sum-right{flex:1}
+.zone-bar{display:grid;grid-template-columns:1fr 1fr 1fr;border-radius:6px;overflow:hidden;height:10px;margin-bottom:5px}
+.zg{background:var(--green-mid)}.zy{background:var(--amber-mid)}.zr{background:var(--red-mid)}
+.zone-labels{display:grid;grid-template-columns:1fr 1fr 1fr;font-size:10px}
+.zone-labels span:nth-child(1){color:var(--green-dark)}
+.zone-labels span:nth-child(2){color:var(--amber-dark);text-align:center}
+.zone-labels span:nth-child(3){color:var(--red-dark);text-align:right}
+.zone-pointer-wrap{position:relative;height:14px;margin-top:2px}
+.zone-pointer{position:absolute;top:0;transform:translateX(-50%);width:2px;height:14px;background:var(--ink);border-radius:2px;transition:left .4s cubic-bezier(.4,0,.2,1)}
+.sum-verdict{font-size:13px;color:var(--ink2);margin-top:6px;line-height:1.4}
+.sum-verdict strong{color:var(--ink)}
+
+.notes-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px}
+.notes-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:14px 16px}
+.note-label{font-size:10px;font-weight:600;color:var(--ink3);letter-spacing:.06em;text-transform:uppercase;margin-bottom:8px}
+.note-row{margin-bottom:10px}
+.note-sublabel{font-size:11px;color:var(--ink3);margin-bottom:3px}
+.note-input{width:100%;background:transparent;border:none;border-bottom:1px solid var(--border);font-size:13px;font-family:var(--font);color:var(--ink);padding:4px 0;outline:none;display:block}
+.note-input:focus{border-bottom-color:var(--ink2)}
+textarea.note-input{resize:none;height:130px;border:1px solid var(--border);border-radius:var(--radius-sm);padding:8px}
+
+.package-row{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:14px 16px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:20px}
+.pkg-opt{border:1.5px solid var(--border);border-radius:var(--radius-sm);padding:10px 12px;cursor:pointer;text-align:center;transition:all .15s;user-select:none;-webkit-user-select:none}
+.pkg-opt:active{transform:scale(0.97)}
+.pkg-opt .pkg-name{font-size:13px;font-weight:600;color:var(--ink)}
+.pkg-opt .pkg-sub{font-size:11px;color:var(--ink2);margin-top:2px}
+.pkg-opt.selected{border-color:var(--ink);background:var(--ink)}
+.pkg-opt.selected .pkg-name,.pkg-opt.selected .pkg-sub{color:white}
+
+/* Edit photo modal */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:300;display:flex;align-items:center;justify-content:center;padding:20px}
+.modal{background:white;border-radius:var(--radius);padding:24px;width:100%;max-width:480px}
+.modal-title{font-size:16px;font-weight:600;color:var(--ink);margin-bottom:4px}
+.modal-sub{font-size:12px;color:var(--ink2);margin-bottom:16px;line-height:1.5}
+.modal-input{width:100%;border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px 12px;font-size:13px;font-family:var(--font);color:var(--ink);outline:none;margin-bottom:12px}
+.modal-input:focus{border-color:var(--ink2)}
+.modal-hint{font-size:11px;color:var(--ink3);line-height:1.5;background:#f5f2ec;border-radius:6px;padding:10px 12px;margin-bottom:16px}
+.modal-hint strong{color:var(--ink2)}
+.modal-btns{display:flex;gap:8px;justify-content:flex-end}
+.btn-cancel{background:white;color:var(--ink);border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px 18px;font-size:14px;font-family:var(--font);cursor:pointer}
+.btn-save{background:var(--ink);color:white;border:none;border-radius:var(--radius-sm);padding:10px 18px;font-size:14px;font-weight:600;font-family:var(--font);cursor:pointer}
+
+.pdf-bar{position:fixed;bottom:0;left:0;right:0;background:white;border-top:1px solid var(--border);padding:14px 20px;display:flex;gap:10px;z-index:200}
+.btn-pdf{flex:1;background:var(--ink);color:white;border:none;border-radius:var(--radius-sm);padding:14px;font-size:15px;font-weight:600;font-family:var(--font);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px}
+.btn-pdf:active{opacity:.85}
+.btn-clear{background:white;color:var(--ink);border:1px solid var(--border);border-radius:var(--radius-sm);padding:14px 20px;font-size:14px;font-weight:500;font-family:var(--font);cursor:pointer}
+
+@media print{
+  .page-header{position:relative;background:#1a1a18!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .pdf-bar,.modal-overlay{display:none!important}
+  body{padding:0;background:white}
+  .main{padding:16px}
+  .cat-card,.summary-card,.notes-card,.notes-grid,.package-row{break-inside:avoid}
+  .pill,.ref-ill{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .photo-placeholder{display:none}
+}
+</style>
+</head>
+<body>
+
+<div class="page-header">
+  <div class="header-left">
+    <div class="co">Aesthetic Roofing</div>
+    <div class="title">Roof Health Scorecard</div>
+  </div>
+  <div class="score-chip">
+    <div>
+      <div class="score-big" id="hdr-score">—</div>
+      <div class="score-denom">out of 10</div>
+    </div>
+    <div class="zone-pill" id="hdr-zone" style="display:none"></div>
+  </div>
+</div>
+
+<div class="main">
+
+  <div class="meta-grid">
+    <div class="meta-field">
+      <div class="meta-label">Homeowner name</div>
+      <input class="meta-input" type="text" placeholder="Full name" id="m-name"/>
+    </div>
+    <div class="meta-field">
+      <div class="meta-label">Address</div>
+      <input class="meta-input" type="text" placeholder="Street address" id="m-addr"/>
+    </div>
+    <div class="meta-field">
+      <div class="meta-label">Inspector</div>
+      <input class="meta-input" type="text" placeholder="Your name" id="m-inspector"/>
+    </div>
+    <div class="meta-field">
+      <div class="meta-label">Date</div>
+      <input class="meta-input" type="date" id="m-date"/>
+    </div>
+  </div>
+
+  <div class="sec-label">Five inspection areas — tap to score</div>
+  <div class="cats" id="cats"></div>
+
+  <div class="sec-label">Score summary</div>
+  <div class="summary-card">
+    <div class="sum-score">
+      <div class="sum-num" id="sum-num">—</div>
+      <div class="sum-den">/ 10</div>
+    </div>
+    <div class="sum-right">
+      <div>
+        <div class="zone-bar"><div class="zg"></div><div class="zy"></div><div class="zr"></div></div>
+        <div class="zone-labels"><span>0–3 Good</span><span>4–6 Aging</span><span>7–10 Critical</span></div>
+        <div class="zone-pointer-wrap">
+          <div class="zone-pointer" id="zone-ptr" style="left:0%;display:none"></div>
+        </div>
+      </div>
+      <div class="sum-verdict" id="sum-verdict">Score each area above to see the result.</div>
+    </div>
+  </div>
+
+  <div class="sec-label">Notes</div>
+  <div class="notes-grid">
+    <div class="notes-card">
+      <div class="note-label">Homeowner details</div>
+      <div class="note-row">
+        <div class="note-sublabel">Main concern (their exact words)</div>
+        <input class="note-input" type="text" placeholder="e.g. worried about leaks when it storms" id="n-concern"/>
+      </div>
+      <div class="note-row">
+        <div class="note-sublabel">Estimated roof age</div>
+        <input class="note-input" type="text" placeholder="e.g. 15 years / unknown" id="n-age"/>
+      </div>
+      <div class="note-row">
+        <div class="note-sublabel">Leaks or ceiling spots noticed?</div>
+        <input class="note-input" type="text" placeholder="Yes / No / Details" id="n-leaks"/>
+      </div>
+      <div class="note-row" style="margin-bottom:0">
+        <div class="note-sublabel">Other homeowners present?</div>
+        <input class="note-input" type="text" placeholder="Name(s)" id="n-others"/>
+      </div>
+    </div>
+    <div class="notes-card">
+      <div class="note-label">Inspector observations</div>
+      <textarea class="note-input" placeholder="Additional notes, attic findings, notable damage areas..." id="n-obs"></textarea>
+    </div>
+  </div>
+
+  <div class="sec-label">Recommended package</div>
+  <div class="package-row">
+    <div class="pkg-opt" onclick="selectPkg(this)"><div class="pkg-name">Premium</div><div class="pkg-sub">GAF Grand Sequoia</div></div>
+    <div class="pkg-opt" onclick="selectPkg(this)"><div class="pkg-name">Gold</div><div class="pkg-sub">GAF HDZ — most popular</div></div>
+    <div class="pkg-opt" onclick="selectPkg(this)"><div class="pkg-name">Minimum</div><div class="pkg-sub">GAF Natural Shadow</div></div>
+  </div>
+
+</div>
+
+<!-- Photo URL modal -->
+<div class="modal-overlay" id="modal" style="display:none">
+  <div class="modal">
+    <div class="modal-title" id="modal-title">Set reference photo</div>
+    <div class="modal-sub" id="modal-sub"></div>
+    <input class="modal-input" type="url" id="modal-url" placeholder="Paste image URL here..."/>
+    <div class="modal-hint">
+      <strong>Google Drive:</strong> Share the file → "Anyone with link" → copy the File ID from the URL, then use:<br/>
+      <code style="font-size:10px">https://drive.google.com/uc?export=view&id=FILE_ID</code><br/><br/>
+      <strong>Dropbox:</strong> Share → copy link → change <code style="font-size:10px">?dl=0</code> to <code style="font-size:10px">?raw=1</code><br/><br/>
+      <strong>Any direct image URL</strong> ending in .jpg, .png, or .webp also works.
+    </div>
+    <div class="modal-btns">
+      <button class="btn-cancel" onclick="closeModal()">Cancel</button>
+      <button class="btn-save" onclick="savePhoto()">Save photo</button>
+    </div>
+  </div>
+</div>
+
+<div class="pdf-bar">
+  <button class="btn-clear" onclick="clearAll()">Clear</button>
+  <button class="btn-pdf" onclick="window.print()">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+    Save as PDF
+  </button>
+</div>
+
+<script>
+// Map PHOTOS config keys to category indices and score values
+const PHOTO_KEYS = ['shingles','damage','flashings','ventilation','leaks'];
+const SCORE_KEYS = ['good','aging','problem'];
+
+const CATS = [
+  {
+    name:"Shingle condition", desc:"Age, granule loss, cracking, curling", key:"shingles",
+    refs:[
+      {label:"0 — Good",    cls:"rb0", desc:"Full granule coverage, uniform color, flat & tight"},
+      {label:"1 — Aging",   cls:"rb1", desc:"Granule loss visible, fading, slight curling at edges"},
+      {label:"2 — Problem", cls:"rb2", desc:"Heavy granule loss, cracking, bare patches, cupping"}
+    ]
+  },
+  {
+    name:"Visible damage", desc:"Missing shingles, storm damage, hail hits", key:"damage",
+    refs:[
+      {label:"0 — Good",    cls:"rb0", desc:"No missing, cracked, or displaced shingles"},
+      {label:"1 — Aging",   cls:"rb1", desc:"1–2 cracked or lifted shingles, minor wear"},
+      {label:"2 — Problem", cls:"rb2", desc:"Multiple missing shingles, exposed felt, hail bruising"}
+    ]
+  },
+  {
+    name:"Flashings & penetrations", desc:"Chimney, pipes, valleys — main leak entry points", key:"flashings",
+    refs:[
+      {label:"0 — Good",    cls:"rb0", desc:"Tight seals, no rust, caulk intact, no gaps"},
+      {label:"1 — Aging",   cls:"rb1", desc:"Minor caulk shrinkage, surface rust starting"},
+      {label:"2 — Problem", cls:"rb2", desc:"Lifted flashing, open gaps, heavy rust or missing sections"}
+    ]
+  },
+  {
+    name:"Ventilation", desc:"Attic breathes properly, no heat or moisture buildup", key:"ventilation",
+    refs:[
+      {label:"0 — Good",    cls:"rb0", desc:"Ridge & soffit vents clear, no moisture staining"},
+      {label:"1 — Aging",   cls:"rb1", desc:"Partial blockage, minor staining on decking"},
+      {label:"2 — Problem", cls:"rb2", desc:"Blocked vents, mold/rot on decking, visible moisture damage"}
+    ]
+  },
+  {
+    name:"Leaks / interior signs", desc:"Active leaks or water stains observed inside", key:"leaks",
+    refs:[
+      {label:"0 — Good",    cls:"rb0", desc:"No stains, no soft spots, deck looks dry"},
+      {label:"1 — Aging",   cls:"rb1", desc:"Old stain visible, no active moisture currently"},
+      {label:"2 — Problem", cls:"rb2", desc:"Active leak, recent staining, soft or rotted decking"}
+    ]
+  }
+];
+
+const scores = Array(5).fill(null);
+
+// SVG fallback illustrations
+function svg(w,h,c){return`<svg viewBox="0 0 ${w} ${h}" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%;display:block">${c}</svg>`}
+function shingleGrid(rows,cols,fn){let s='';rows.forEach(([ox,y])=>cols.forEach((x,i)=>{const c=fn(i,y);if(c.skip)return;s+=`<rect x="${ox+x}" y="${y}" width="22" height="18" rx="1" fill="${c.fill}" stroke="${c.stroke}" stroke-width="0.5"/>`;if(c.crack)s+=`<line x1="${ox+x+3}" y1="${y+3}" x2="${ox+x+19}" y2="${y+14}" stroke="#503020" stroke-width="0.9" opacity="0.7"/>`;if(c.bare)s+=`<rect x="${ox+x+1}" y="${y}" width="6" height="18" fill="#888" opacity="0.3"/>`;if(c.curl)s+=`<rect x="${ox+x+16}" y="${y}" width="6" height="5" rx="0.5" fill="#aaa" opacity="0.5"/>`;if(c.granule)s+=`<rect x="${ox+x+1}" y="${y+12}" width="20" height="5" rx="0.5" fill="#6a8b5a" opacity="0.35"/>`;} ));return s;}
+const ROWS=[[0,0],[8,16],[0,32],[8,48]],COLS=[-8,0,20,40,60,80,100,120];
+const FALLBACKS = {
+  shingles: {
+    good:    ()=>svg(160,64,shingleGrid(ROWS,COLS,()=>({fill:'#7a9b6a',stroke:'#5a7a4a',granule:true}))),
+    aging:   ()=>svg(160,64,shingleGrid(ROWS,COLS,(i)=>({fill:i%3===0?'#b8a87a':'#a8986a',stroke:'#887848',curl:i%4===1}))),
+    problem: ()=>{let s=shingleGrid(ROWS,COLS,(i,y)=>({skip:i===3&&y===16,fill:i%2===0?'#b09060':'#907050',stroke:'#705030',crack:i%3===0,bare:i%5===0}));s+=`<text x="80" y="62" text-anchor="middle" font-size="8" fill="#a32d2d" font-weight="600" font-family="sans-serif">bare felt exposed</text>`;return svg(160,64,s);}
+  },
+  damage: {
+    good:    ()=>svg(160,64,shingleGrid(ROWS,COLS,()=>({fill:'#7a9b6a',stroke:'#5a7a4a'}))),
+    aging:   ()=>{let s=shingleGrid(ROWS,COLS,()=>({fill:'#a89878',stroke:'#887858'}));s+=`<rect x="58" y="0" width="24" height="18" rx="1" fill="#c8a858" stroke="#a88838" stroke-width="1.5"/>`;s+=`<line x1="62" y1="4" x2="78" y2="14" stroke="#805820" stroke-width="1.2"/>`;s+=`<text x="70" y="50" text-anchor="middle" font-size="8" fill="#854f0b" font-weight="600" font-family="sans-serif">cracked shingle</text>`;return svg(160,64,s);},
+    problem: ()=>{let s=shingleGrid(ROWS,COLS,(i,y)=>(i===2&&y===16?{skip:true}:{fill:'#a89878',stroke:'#887858'}));s+=`<rect x="38" y="16" width="22" height="18" fill="#c8c0b0" stroke="#a09088" stroke-width="0.5" stroke-dasharray="2,2"/>`;s+=`<text x="49" y="27" text-anchor="middle" font-size="7" fill="#a32d2d" font-weight="700" font-family="sans-serif">MISSING</text>`;[10,36,62,88,114,135].forEach((cx,i)=>{const cy=8+(i%3)*16;s+=`<circle cx="${cx}" cy="${cy}" r="4" fill="none" stroke="#a32d2d" stroke-width="1.2"/>`;s+=`<circle cx="${cx}" cy="${cy}" r="1.5" fill="#a32d2d"/>`;});s+=`<text x="130" y="60" text-anchor="middle" font-size="7.5" fill="#a32d2d" font-family="sans-serif">hail bruising</text>`;return svg(160,64,s);}
+  },
+  flashings: {
+    good:    ()=>{let s=shingleGrid(ROWS,COLS,()=>({fill:'#7a9b6a',stroke:'#5a7a4a'}));s+=`<rect x="60" y="5" width="40" height="9" rx="1.5" fill="#aaa" stroke="#888" stroke-width="0.5"/>`;s+=`<rect x="76" y="14" width="8" height="50" rx="3" fill="#aaa" stroke="#888" stroke-width="0.5"/>`;s+=`<text x="80" y="62" text-anchor="middle" font-size="8" fill="#3B6D11" font-weight="600" font-family="sans-serif">sealed tight</text>`;return svg(160,64,s);},
+    aging:   ()=>{let s=shingleGrid(ROWS,COLS,()=>({fill:'#a89878',stroke:'#887858'}));s+=`<rect x="60" y="5" width="32" height="9" rx="1.5" fill="#c0a060" stroke="#a07840" stroke-width="0.5"/>`;s+=`<rect x="84" y="5" width="8" height="5" fill="#c07828" opacity="0.65"/>`;s+=`<rect x="76" y="14" width="8" height="50" rx="3" fill="#b08040" stroke="#907030" stroke-width="0.5"/>`;s+=`<text x="80" y="62" text-anchor="middle" font-size="8" fill="#854f0b" font-weight="600" font-family="sans-serif">surface rust</text>`;return svg(160,64,s);},
+    problem: ()=>{let s=shingleGrid(ROWS,COLS,()=>({fill:'#a89878',stroke:'#887858'}));s+=`<rect x="60" y="5" width="24" height="9" rx="1.5" fill="#906030" stroke="#703010" stroke-width="0.5"/>`;s+=`<path d="M84 5 L100 0 L100 14 L84 14" fill="none" stroke="#a32d2d" stroke-width="1.5" stroke-dasharray="2,2"/>`;s+=`<text x="96" y="24" font-size="8" fill="#a32d2d" font-weight="600" font-family="sans-serif">open gap</text>`;s+=`<rect x="76" y="14" width="8" height="50" rx="3" fill="#806040" stroke="#604020" stroke-width="0.5"/>`;return svg(160,64,s);}
+  },
+  ventilation: {
+    good:    ()=>{let s=`<rect x="0" y="0" width="160" height="72" fill="#e8dcc8"/><polygon points="0,42 80,10 160,42 160,72 0,72" fill="#c4a878" stroke="#888" stroke-width="0.5"/>`;s+=`<rect x="52" y="10" width="56" height="13" rx="2" fill="#bbb" stroke="#999" stroke-width="0.5"/>`;for(let i=0;i<5;i++)s+=`<rect x="${56+i*10}" y="11" width="6" height="11" rx="1" fill="#777" opacity="0.45"/>`;s+=`<line x1="80" y1="23" x2="80" y2="40" stroke="#4a90d9" stroke-width="1.5" stroke-dasharray="2,2" opacity="0.7"/>`;s+=`<text x="80" y="66" text-anchor="middle" font-size="8" fill="#3B6D11" font-weight="600" font-family="sans-serif">airflow clear</text>`;return svg(160,72,s);},
+    aging:   ()=>{let s=`<rect x="0" y="0" width="160" height="72" fill="#e8dcc8"/><polygon points="0,42 80,10 160,42 160,72 0,72" fill="#b89868" stroke="#888" stroke-width="0.5"/>`;s+=`<rect x="52" y="10" width="56" height="13" rx="2" fill="#a09060" stroke="#808050" stroke-width="0.5"/>`;for(let i=0;i<5;i++){const b=i===2;s+=`<rect x="${56+i*10}" y="11" width="6" height="11" rx="1" fill="${b?'#987040':'#666'}" opacity="${b?0.95:0.4}"/>`;}s+=`<text x="68" y="20" text-anchor="middle" font-size="7" fill="#854f0b" font-weight="600" font-family="sans-serif">blocked</text>`;s+=`<rect x="28" y="44" width="44" height="10" rx="2" fill="#c8a860" opacity="0.5"/>`;s+=`<text x="50" y="51" text-anchor="middle" font-size="7.5" fill="#854f0b" font-family="sans-serif">light staining</text>`;return svg(160,72,s);},
+    problem: ()=>{let s=`<rect x="0" y="0" width="160" height="72" fill="#e8dcc8"/><polygon points="0,42 80,10 160,42 160,72 0,72" fill="#907060" stroke="#888" stroke-width="0.5"/>`;s+=`<rect x="52" y="10" width="56" height="13" rx="2" fill="#806040" stroke="#604020" stroke-width="0.5"/>`;for(let i=0;i<5;i++)s+=`<rect x="${56+i*10}" y="11" width="6" height="11" rx="1" fill="#504030" opacity="0.85"/>`;s+=`<circle cx="42" cy="52" r="12" fill="#3d6b3d" opacity="0.45"/>`;s+=`<circle cx="62" cy="48" r="8" fill="#3d6b3d" opacity="0.4"/>`;s+=`<text x="80" y="68" text-anchor="middle" font-size="8" fill="#a32d2d" font-weight="600" font-family="sans-serif">mold / rot visible</text>`;return svg(160,72,s);}
+  },
+  leaks: {
+    good:    ()=>{let s=`<rect x="0" y="0" width="160" height="72" fill="#ede8e0"/>`;s+=`<rect x="8" y="14" width="66" height="48" rx="3" fill="#ddd8ce" stroke="#c0bab0" stroke-width="0.5"/>`;s+=`<rect x="88" y="18" width="64" height="42" rx="3" fill="#ddd8ce" stroke="#c0bab0" stroke-width="0.5"/>`;s+=`<text x="41" y="44" text-anchor="middle" font-size="8" fill="#3B6D11" font-weight="600" font-family="sans-serif">ceiling clean</text>`;s+=`<text x="120" y="44" text-anchor="middle" font-size="8" fill="#3B6D11" font-weight="600" font-family="sans-serif">dry deck</text>`;return svg(160,72,s);},
+    aging:   ()=>{let s=`<rect x="0" y="0" width="160" height="72" fill="#ede8e0"/>`;s+=`<rect x="8" y="14" width="66" height="48" rx="3" fill="#ddd8ce" stroke="#c0bab0" stroke-width="0.5"/>`;s+=`<ellipse cx="37" cy="34" rx="16" ry="10" fill="#c8b888" opacity="0.75"/>`;s+=`<text x="37" y="37" text-anchor="middle" font-size="7.5" fill="#854f0b" font-weight="600" font-family="sans-serif">old stain</text>`;s+=`<rect x="88" y="18" width="64" height="42" rx="3" fill="#ddd8ce" stroke="#c0bab0" stroke-width="0.5"/>`;s+=`<text x="120" y="42" text-anchor="middle" font-size="8" fill="#854f0b" font-family="sans-serif">no active wet</text>`;return svg(160,72,s);},
+    problem: ()=>{let s=`<rect x="0" y="0" width="160" height="72" fill="#ede8e0"/>`;s+=`<rect x="8" y="10" width="66" height="52" rx="3" fill="#c8c0aa" stroke="#a8a090" stroke-width="0.5"/>`;s+=`<ellipse cx="38" cy="30" rx="20" ry="13" fill="#a09060" opacity="0.7"/>`;for(let i=0;i<5;i++)s+=`<circle cx="${28+i*6}" cy="${38+i%2*5}" r="2" fill="#4a70c0" opacity="0.75"/>`;s+=`<line x1="46" y1="14" x2="50" y2="52" stroke="#4a70c0" stroke-width="1.2" stroke-dasharray="2,1.5" opacity="0.75"/>`;s+=`<text x="42" y="66" text-anchor="middle" font-size="8" fill="#a32d2d" font-weight="600" font-family="sans-serif">active drip</text>`;s+=`<rect x="88" y="14" width="64" height="44" rx="3" fill="#b0a888" stroke="#909070" stroke-width="0.5"/>`;s+=`<rect x="94" y="28" width="24" height="22" rx="2" fill="#907050" opacity="0.75"/>`;s+=`<text x="118" y="42" font-size="8" fill="#a32d2d" font-weight="600" font-family="sans-serif">soft/rot</text>`;return svg(160,72,s);}
+  }
+};
+
+// Photo URL override storage (runtime — persists via PHOTOS config for deployment)
+const photoOverrides = {};
+
+function getPhoto(catKey, scoreKey) {
+  const override = photoOverrides[`${catKey}_${scoreKey}`];
+  if (override) return override;
+  const cfg = PHOTOS[catKey][scoreKey];
+  return cfg && cfg.trim() !== '' ? cfg : null;
+}
+
+function renderSlot(catKey, scoreKey, el, catIdx, scoreIdx) {
+  const url = getPhoto(catKey, scoreKey);
+  if (url) {
+    el.innerHTML = `<img src="${url}" alt="${catKey} score ${scoreIdx}" style="width:100%;height:100%;object-fit:cover;border-radius:6px;display:block;" onerror="this.parentElement.innerHTML=getFallbackHtml('${catKey}','${scoreKey}','${catIdx}','${scoreIdx}')"/>`;
+  } else {
+    el.innerHTML = `
+      <div class="photo-placeholder" onclick="openModal('${catKey}','${scoreKey}',${catIdx},${scoreIdx})" title="Tap to add a photo">
+        <svg class="placeholder-icon" viewBox="0 0 24 24" fill="none" stroke="#999" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+        <div class="placeholder-text">Tap to add<br/>reference photo</div>
+      </div>`;
+    // Overlay illustration behind placeholder
+    const fb = FALLBACKS[catKey][scoreKey];
+    if (fb) {
+      const bg = document.createElement('div');
+      bg.style.cssText = 'position:absolute;inset:0;opacity:0.18;pointer-events:none;border-radius:6px;overflow:hidden';
+      bg.innerHTML = fb();
+      el.style.position = 'relative';
+      el.insertBefore(bg, el.firstChild);
+    }
+  }
+}
+
+function getFallbackHtml(catKey, scoreKey) {
+  const fb = FALLBACKS[catKey] && FALLBACKS[catKey][scoreKey];
+  return fb ? `<div style="opacity:.18;width:100%;height:100%">${fb()}</div>` : '';
+}
+
+// Modal state
+let _modalCat, _modalScore, _modalCatIdx, _modalScoreIdx;
+function openModal(catKey, scoreKey, catIdx, scoreIdx) {
+  _modalCat = catKey; _modalScore = scoreKey;
+  _modalCatIdx = catIdx; _modalScoreIdx = scoreIdx;
+  const labels = {good:'Score 0 — Good',aging:'Score 1 — Aging',problem:'Score 2 — Problem'};
+  const catNames = {shingles:'Shingle condition',damage:'Visible damage',flashings:'Flashings & penetrations',ventilation:'Ventilation',leaks:'Leaks / interior signs'};
+  document.getElementById('modal-title').textContent = `${catNames[catKey]}: ${labels[scoreKey]}`;
+  document.getElementById('modal-sub').textContent = 'Paste a direct image URL to use as the reference photo for this score level.';
+  document.getElementById('modal-url').value = getPhoto(catKey, scoreKey) || '';
+  document.getElementById('modal').style.display = 'flex';
+  setTimeout(() => document.getElementById('modal-url').focus(), 50);
+}
+function closeModal() { document.getElementById('modal').style.display = 'none'; }
+function savePhoto() {
+  const url = document.getElementById('modal-url').value.trim();
+  const key = `${_modalCat}_${_modalScore}`;
+  if (url) photoOverrides[key] = url;
+  else delete photoOverrides[key];
+  const el = document.getElementById(`ill-${_modalCatIdx}-${_modalScoreIdx}`);
+  renderSlot(_modalCat, _modalScore, el, _modalCatIdx, _modalScoreIdx);
+  closeModal();
+}
+
+function buildCats() {
+  const container = document.getElementById('cats');
+  CATS.forEach((cat, i) => {
+    const scoreKeys = ['good','aging','problem'];
+    const div = document.createElement('div');
+    div.className = 'cat-card';
+    div.id = `cat-${i}`;
+    div.innerHTML = `
+      <div class="cat-top">
+        <div><div class="cat-name">${cat.name}</div><div class="cat-desc">${cat.desc}</div></div>
+        <div class="pills">
+          ${[0,1,2].map(v=>`<div class="pill" data-i="${i}" data-v="${v}">${v}</div>`).join('')}
+        </div>
+      </div>
+      <div class="ref-strip">
+        ${cat.refs.map((r,j)=>`
+          <div class="ref-col">
+            <div class="ref-badge ${r.cls}">${r.label}</div>
+            <div class="ref-ill" id="ill-${i}-${j}"></div>
+            <div class="ref-desc">${r.desc}</div>
+          </div>`).join('')}
+      </div>`;
+    container.appendChild(div);
+    cat.refs.forEach((r, j) => {
+      renderSlot(cat.key, scoreKeys[j], document.getElementById(`ill-${i}-${j}`), i, j);
+    });
+  });
+  container.addEventListener('click', e => {
+    const p = e.target.closest('.pill');
+    if (!p) return;
+    const i = +p.dataset.i, v = +p.dataset.v;
+    scores[i] = scores[i] === v ? null : v;
+    updatePills(); updateTotal();
+  });
+}
+
+function updatePills() {
+  document.querySelectorAll('.pill').forEach(p => {
+    const i=+p.dataset.i, v=+p.dataset.v;
+    p.className='pill'+(scores[i]===v?` s${v}`:'');
+  });
+  CATS.forEach((_,i)=>{
+    document.getElementById(`cat-${i}`).className='cat-card'+(scores[i]!==null?` scored-${scores[i]}`:'');
+  });
+}
+function updateTotal() {
+  const filled=scores.filter(s=>s!==null);
+  const sumEl=document.getElementById('sum-num');
+  const hdrEl=document.getElementById('hdr-score');
+  const hdrZone=document.getElementById('hdr-zone');
+  const verdict=document.getElementById('sum-verdict');
+  const ptr=document.getElementById('zone-ptr');
+  if(!filled.length){sumEl.textContent='—';hdrEl.textContent='—';hdrZone.style.display='none';verdict.textContent='Score each area above to see the result.';ptr.style.display='none';return;}
+  const sum=filled.reduce((a,b)=>a+b,0);
+  sumEl.textContent=sum; hdrEl.textContent=sum;
+  ptr.style.display='block';
+  ptr.style.left=Math.min(98,Math.max(2,(sum/10)*100))+'%';
+  hdrZone.style.display='inline-flex';
+  if(sum<=3){hdrZone.className='zone-pill zone-green';hdrZone.textContent='Good';verdict.innerHTML=`<strong>Score ${sum}/10 — Good shape.</strong> No major work needed. Advise annual monitoring and plan ahead for future replacement.`;}
+  else if(sum<=6){hdrZone.className='zone-pill zone-amber';hdrZone.textContent='Aging';verdict.innerHTML=`<strong>Score ${sum}/10 — Aging / plan-for-it zone.</strong> Risk increases each season. Most proactive homeowners address this in the next 1–2 seasons.`;}
+  else{hdrZone.className='zone-pill zone-red';hdrZone.textContent='Critical';verdict.innerHTML=`<strong>Score ${sum}/10 — Critical.</strong> High-risk zone. Replacement needed now to avoid interior damage, leaks, and higher costs down the road.`;}
+}
+
+function selectPkg(el){document.querySelectorAll('.pkg-opt').forEach(o=>o.classList.remove('selected'));el.classList.add('selected');}
+
+function clearAll(){
+  if(!confirm('Clear all scores and notes?'))return;
+  scores.fill(null);updatePills();updateTotal();
+  ['m-name','m-addr','m-inspector','n-concern','n-age','n-leaks','n-others','n-obs'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('m-date').valueAsDate=new Date();
+  document.querySelectorAll('.pkg-opt').forEach(o=>o.classList.remove('selected'));
+}
+
+document.getElementById('m-date').valueAsDate = new Date();
+buildCats();
+</script>
+</body>
+</html>
