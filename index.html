@@ -214,14 +214,10 @@ textarea.note-input{resize:none;height:130px;border:1px solid var(--border);bord
 
 <div class="main">
 
-  <div class="meta-grid">
+  <div class="meta-grid" style="grid-template-columns:repeat(3,1fr)">
     <div class="meta-field">
       <div class="meta-label">Homeowner name</div>
       <input class="meta-input" type="text" placeholder="Full name" id="m-name"/>
-    </div>
-    <div class="meta-field">
-      <div class="meta-label">Address</div>
-      <input class="meta-input" type="text" placeholder="Street address" id="m-addr"/>
     </div>
     <div class="meta-field">
       <div class="meta-label">Inspector</div>
@@ -233,60 +229,46 @@ textarea.note-input{resize:none;height:130px;border:1px solid var(--border);bord
     </div>
   </div>
 
-  <div class="sec-label">Five inspection areas — tap to score</div>
+  <div class="sec-label" style="margin-top:16px">Homeowner concerns</div>
+  <div class="notes-card" style="margin-bottom:16px">
+    <textarea id="n-concern" placeholder="Notes..." style="width:100%;height:110px;border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px;font-size:15px;font-family:var(--font);color:var(--ink);background:transparent;resize:none;outline:none;display:block;line-height:1.6"></textarea>
+  </div>
+
+  <div class="sec-label">Inspection areas</div>
   <div class="cats" id="cats"></div>
 
-  <div class="sec-label">Score summary</div>
-  <div class="summary-card">
-    <div class="sum-score">
-      <div class="sum-num" id="sum-num">—</div>
-      <div class="sum-den">/ 10</div>
-    </div>
-    <div class="sum-right">
-      <div>
-        <div class="zone-bar"><div class="zg"></div><div class="zy"></div><div class="zr"></div></div>
-        <div class="zone-labels"><span>0–3 Good</span><span>4–6 Aging</span><span>7–10 Critical</span></div>
-        <div class="zone-pointer-wrap">
-          <div class="zone-pointer" id="zone-ptr" style="left:0%;display:none"></div>
-        </div>
+  <div class="summary-card" id="summary-card" style="flex-direction:column;gap:14px;padding:20px;transition:background 0.3s,border-color 0.3s">
+    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px">
+      <div style="font-size:15px;font-weight:600;color:var(--ink)">Roof Health Score</div>
+      <div style="display:flex;align-items:baseline;gap:6px">
+        <span id="sum-num" style="font-family:var(--mono);font-size:52px;font-weight:500;line-height:1;color:var(--ink)">—</span>
+        <span style="font-size:18px;color:var(--ink);font-family:var(--mono);font-weight:500">/&nbsp;10</span>
       </div>
-      <div class="sum-verdict" id="sum-verdict">Score each area above to see the result.</div>
     </div>
+    <!-- Color band pills -->
+    <div style="display:flex;gap:8px">
+      <div style="flex:1;background:#EAF3DE;border:1.5px solid #639922;border-radius:8px;padding:10px 8px;text-align:center;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px">
+        <div style="font-size:13px;font-weight:600;color:#3B6D11;line-height:1.2;white-space:nowrap">0 – 3</div>
+        <div style="font-size:11px;font-weight:500;color:#639922;line-height:1.2">Good</div>
+      </div>
+      <div style="flex:1;background:#FAEEDA;border:1.5px solid #BA7517;border-radius:8px;padding:10px 8px;text-align:center;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px">
+        <div style="font-size:13px;font-weight:600;color:#854F0B;line-height:1.2;white-space:nowrap">4 – 6</div>
+        <div style="font-size:11px;font-weight:500;color:#BA7517;line-height:1.2">Aging</div>
+      </div>
+      <div style="flex:1;background:#FCEBEB;border:1.5px solid #A32D2D;border-radius:8px;padding:10px 8px;text-align:center;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px">
+        <div style="font-size:13px;font-weight:600;color:#791F1F;line-height:1.2;white-space:nowrap">7 – 10</div>
+        <div style="font-size:11px;font-weight:500;color:#A32D2D;line-height:1.2">Critical</div>
+      </div>
+    </div>
+    <!-- Zone bar + verdict -->
+    <div>
+      <div class="zone-bar" style="height:12px;margin-bottom:6px"><div class="zg"></div><div class="zy"></div><div class="zr"></div></div>
+      <div class="zone-pointer-wrap"><div class="zone-pointer" id="zone-ptr" style="left:0%;display:none"></div></div>
+    </div>
+    <div class="sum-verdict" id="sum-verdict" style="font-size:13px">Score each area above to see the result.</div>
   </div>
 
-  <div class="sec-label">Notes</div>
-  <div class="notes-grid">
-    <div class="notes-card">
-      <div class="note-label">Homeowner details</div>
-      <div class="note-row">
-        <div class="note-sublabel">Main concern (their exact words)</div>
-        <input class="note-input" type="text" placeholder="e.g. worried about leaks when it storms" id="n-concern"/>
-      </div>
-      <div class="note-row">
-        <div class="note-sublabel">Estimated roof age</div>
-        <input class="note-input" type="text" placeholder="e.g. 15 years / unknown" id="n-age"/>
-      </div>
-      <div class="note-row">
-        <div class="note-sublabel">Leaks or ceiling spots noticed?</div>
-        <input class="note-input" type="text" placeholder="Yes / No / Details" id="n-leaks"/>
-      </div>
-      <div class="note-row" style="margin-bottom:0">
-        <div class="note-sublabel">Other homeowners present?</div>
-        <input class="note-input" type="text" placeholder="Name(s)" id="n-others"/>
-      </div>
-    </div>
-    <div class="notes-card">
-      <div class="note-label">Inspector observations</div>
-      <textarea class="note-input" placeholder="Additional notes, attic findings, notable damage areas..." id="n-obs"></textarea>
-    </div>
-  </div>
 
-  <div class="sec-label">Recommended package</div>
-  <div class="package-row">
-    <div class="pkg-opt" onclick="selectPkg(this)"><div class="pkg-name">Premium</div><div class="pkg-sub">GAF Grand Sequoia</div></div>
-    <div class="pkg-opt" onclick="selectPkg(this)"><div class="pkg-name">Gold</div><div class="pkg-sub">GAF HDZ — most popular</div></div>
-    <div class="pkg-opt" onclick="selectPkg(this)"><div class="pkg-name">Minimum</div><div class="pkg-sub">GAF Natural Shadow</div></div>
-  </div>
 
 </div>
 
@@ -481,6 +463,9 @@ function buildCats() {
             <div class="ref-ill" id="ill-${i}-${j}"></div>
             <div class="ref-desc">${r.desc}</div>
           </div>`).join('')}
+      </div>
+      <div style="padding:10px 14px;border-top:0.5px solid var(--border)">
+        <textarea id="cat-notes-${i}" placeholder="Inspector notes..." style="width:100%;height:60px;border:1px solid var(--border);border-radius:var(--radius-sm);padding:8px 10px;font-size:13px;font-family:var(--font);color:var(--ink);background:var(--color-background-secondary,#faf9f7);resize:none;outline:none;display:block;line-height:1.5"></textarea>
       </div>`;
     container.appendChild(div);
     cat.refs.forEach((r, j) => {
@@ -512,15 +497,29 @@ function updateTotal() {
   const hdrZone=document.getElementById('hdr-zone');
   const verdict=document.getElementById('sum-verdict');
   const ptr=document.getElementById('zone-ptr');
-  if(!filled.length){sumEl.textContent='—';hdrEl.textContent='—';hdrZone.style.display='none';verdict.textContent='Score each area above to see the result.';ptr.style.display='none';return;}
+  const card=document.getElementById('summary-card');
+  if(!filled.length){sumEl.textContent='—';hdrEl.textContent='—';hdrZone.style.display='none';verdict.textContent='Score each area above to see the result.';ptr.style.display='none';card.style.background='';card.style.borderColor='';sumEl.style.color='var(--ink)';return;}
   const sum=filled.reduce((a,b)=>a+b,0);
   sumEl.textContent=sum; hdrEl.textContent=sum;
   ptr.style.display='block';
   ptr.style.left=Math.min(98,Math.max(2,(sum/10)*100))+'%';
   hdrZone.style.display='inline-flex';
-  if(sum<=3){hdrZone.className='zone-pill zone-green';hdrZone.textContent='Good';verdict.innerHTML=`<strong>Score ${sum}/10 — Good shape.</strong> No major work needed. Advise annual monitoring and plan ahead for future replacement.`;}
-  else if(sum<=6){hdrZone.className='zone-pill zone-amber';hdrZone.textContent='Aging';verdict.innerHTML=`<strong>Score ${sum}/10 — Aging / plan-for-it zone.</strong> Risk increases each season. Most proactive homeowners address this in the next 1–2 seasons.`;}
-  else{hdrZone.className='zone-pill zone-red';hdrZone.textContent='Critical';verdict.innerHTML=`<strong>Score ${sum}/10 — Critical.</strong> High-risk zone. Replacement needed now to avoid interior damage, leaks, and higher costs down the road.`;}
+  if(sum<=3){
+    hdrZone.className='zone-pill zone-green';hdrZone.textContent='Good';
+    verdict.innerHTML=`<strong>Score ${sum}/10 — Good shape.</strong> No major work needed. Advise annual monitoring and plan ahead for future replacement.`;
+    card.style.background='#C6E4A8';card.style.borderColor='#3a7a0a';
+    sumEl.style.color='#2a5a08';
+  } else if(sum<=6){
+    hdrZone.className='zone-pill zone-amber';hdrZone.textContent='Aging';
+    verdict.innerHTML=`<strong>Score ${sum}/10 — Aging / plan-for-it zone.</strong> Risk increases each season. Most proactive homeowners address this in the next 1–2 seasons.`;
+    card.style.background='#F9D48A';card.style.borderColor='#996010';
+    sumEl.style.color='#6b3d08';
+  } else{
+    hdrZone.className='zone-pill zone-red';hdrZone.textContent='Critical';
+    verdict.innerHTML=`<strong>Score ${sum}/10 — Critical.</strong> High-risk zone. Replacement needed now to avoid interior damage, leaks, and higher costs down the road.`;
+    card.style.background='#e85555';card.style.borderColor='#6b0000';
+    sumEl.style.color='#3d0000';
+  }
 }
 
 function selectPkg(el){document.querySelectorAll('.pkg-opt').forEach(o=>o.classList.remove('selected'));el.classList.add('selected');}
@@ -528,9 +527,9 @@ function selectPkg(el){document.querySelectorAll('.pkg-opt').forEach(o=>o.classL
 function clearAll(){
   if(!confirm('Clear all scores and notes?'))return;
   scores.fill(null);updatePills();updateTotal();
-  ['m-name','m-addr','m-inspector','n-concern','n-age','n-leaks','n-others','n-obs'].forEach(id=>document.getElementById(id).value='');
+  ['m-name','m-inspector','n-concern'].forEach(id=>{const el=document.getElementById(id);if(el)el.value=''});
   document.getElementById('m-date').valueAsDate=new Date();
-  document.querySelectorAll('.pkg-opt').forEach(o=>o.classList.remove('selected'));
+  CATS.forEach((_,i)=>{const el=document.getElementById(`cat-notes-${i}`);if(el)el.value='';});
 }
 
 document.getElementById('m-date').valueAsDate = new Date();
